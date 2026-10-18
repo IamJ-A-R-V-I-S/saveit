@@ -1,0 +1,32 @@
+account;category;currency;amount;ref_currency_amount;type;payment_type;payment_type_local;note;date;gps_latitude;gps_longitude;gps_accuracy_in_meters;warranty_in_month;transfer;payee;labels;envelope_id;custom_category
+Cash;Cha;INR;-10.00;-10.00;Expenses;CASH;Cash;;2026-09-26 19:12:03;;;;0;false;;;5002;true
+Cash;Vegetables;INR;-70.00;-70.00;Expenses;CASH;Cash;;2026-09-26 19:11:45;;;;0;false;;;2009;false
+SBI;Grocery;INR;-58.00;-58.00;Expenses;CASH;Cash;;2026-09-25 19:10:52;;;;0;false;;;2005;false
+SBI;Grocery;INR;-58.00;-58.00;Expenses;CASH;Cash;;2026-09-25 19:10:22;;;;0;false;;;2005;false
+SBI;Chicken Biryani;INR;-100.00;-100.00;Expenses;CASH;Cash;;2026-09-24 13:20:45;;;;0;false;;;11001;true
+SBI;Uber;INR;-76.00;-76.00;Expenses;CASH;Cash;Office;2026-09-23 08:01:47;;;;0;false;;;4001;true
+SBI;Auto;INR;-17.00;-17.00;Expenses;CASH;Cash;;2026-09-22 10:07:36;;;;0;false;;;4000;true
+SBI;Metro;INR;-19.00;-19.00;Expenses;CASH;Cash;;2026-09-21 08:40:34;;;;0;false;;;4000;true
+SBI;Rent;INR;-6000.00;-6000.00;Expenses;CASH;Cash;Room rent + electric + water;2026-09-20 18:05:14;;;;0;false;;;3000;false
+SBI;Mobile recharge;INR;-199.00;-199.00;Expenses;CASH;Cash;Vi recharge;2026-09-19 10:58:07;;;;0;false;;;7002;true
+SBI;Charges, Fees;INR;-542.00;-542.00;Expenses;CASH;Cash;Exam fees for 4th sem;2026-09-18 17:46:43;;;;0;false;;;8005;false
+SBI;Charges, Fees;INR;-542.00;-542.00;Expenses;CASH;Cash;For CR exam fees 4th sem;2026-09-18 17:46:24;;;;0;false;;;8005;false
+SBI;Loan, interests;INR;-500.00;-500.00;Expenses;CASH;Cash;Me -> Kiron : Shopping;2026-09-17 20:09:26;;;;0;false;Kiron;;8002;false
+SBI;Eggs;INR;-32.00;-32.00;Expenses;CASH;Cash;;2026-09-16 16:49:40;;;;0;false;;;2005;true
+SBI;Milk;INR;-20.00;-20.00;Expenses;CASH;Cash;;2026-09-16 16:49:50;;;;0;false;;;2005;true
+Cash;guava;INR;-45.00;-45.00;Expenses;CASH;Cash;;2026-09-15 13:38:45;;;;0;false;;;1002;true
+Cash;BANANA;INR;-20.00;-20.00;Expenses;CASH;Cash;;2026-09-14 20:24:15;;;;0;false;;;1000;true
+SBI;Chanachur0;INR;-10.00;-10.00;Expenses;CASH;Cash;;2026-09-13 19:24:18;;;;0;false;;;2005;true
+SBI;Idli sambar;INR;-45.00;-45.00;Expenses;CASH;Cash;;2026-09-12 20:55:33;;;;0;false;;;8006;true
+SBI;Coca-Cola;INR;-20.00;-20.00;Expenses;CASH;Cash;;2026-09-11 13:35:17;;;;0;false;;;5002;true
+SBI;Lending, renting;INR;1000.00;1000.00;Income;CASH;Cash;"Arun -> Me : repayment
+second line of the same note";2026-09-10 15:11:39;;;;0;false;Arun;;10005;false
+SBI;Tuition;INR;1500.00;1500.00;Income;CASH;Cash;From a student;2026-09-09 23:15:00;;;;0;false;;;10006;true
+SBI;Freelancing;INR;10000.00;10000.00;Income;CASH;Cash;;2026-09-08 23:53:42;;;;0;false;;;10006;true
+SBI;Ericsson;INR;6954.00;6954.00;Income;CASH;Cash;;2026-09-07 16:21:07;;;;0;false;;;10006;true
+SBI;GitHub Subscription;INR;-998.00;-998.00;Expenses;CASH;Cash;;2026-09-06 22:20:17;;;;0;false;;;6006;true
+Cash;Thumbs-up;INR;-20.00;-20.00;Expenses;CASH;Cash;;2026-09-05 19:30:20;;;;0;false;;;5002;true
+Cash;Thumbs-up;INR;-20.00;-20.00;Expenses;CASH;Cash;;2026-09-04 19:30:20;;;;0;false;;;5002;true
+Cash;Thumbs-up;INR;-20.00;-20.00;Expenses;CASH;Cash;;2026-09-03 19:30:20;;;;0;false;;;5002;true
+Cash;Thumbs-up;INR;-20.00;-20.00;Expenses;CASH;Cash;;2026-09-02 19:30:20;;;;0;false;;;5002;true
+Cash;Thumbs-up;INR;-20.00;-20.00;Expenses;CASH;Cash;;2026-09-01 19:30:20;;;;0;false;;;5002;true

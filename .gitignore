@@ -1,0 +1,46 @@
+# --- dependencies / build output ---
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# --- env & secrets (never commit) ---
+.env
+.env.*
+!.env.example
+*.pem
+supabase/.temp/
+supabase/.branches/
+
+# --- runtime / logs ---
+*.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- caches ---
+.cache/
+.parcel-cache/
+.turbo/
+.eslintcache
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.venv/
+
+# --- editors / OS ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- local scratch ---
+scratch/
+tmp/
+*.local.csv
+*.local.xlsx
