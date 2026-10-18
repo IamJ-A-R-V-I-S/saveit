@@ -44,9 +44,14 @@ echo "▸ running database integration tests"
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f scripts/db-integration-test.sql
 
 echo
+echo "▸ running SECURITY DEFINER regression tests (migration 0009)"
+psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f scripts/db-security-test.sql
+
+echo
 echo "▸ dropping test helper artifacts"
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -c \
   'drop table if exists public._saveit_test_results;
+   drop table if exists public._saveit_sec_results;
    drop function if exists public._saveit_assert(text, boolean, text);'
 
 echo
