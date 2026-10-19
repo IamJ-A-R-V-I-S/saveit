@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { PageHeading } from "@/components/page-heading";
+import { AccountsCard } from "@/components/settings/accounts-card";
 import { BackendStatus } from "@/components/settings/backend-status";
 import { ProfileForm, SignOutButton, TelegramForm } from "@/components/settings/settings-forms";
 import { Card, CardBody, CardHeader } from "@/components/ui";
+import { getAccountsWithUsage } from "@/lib/data/accounts";
 import { getProfile } from "@/lib/data/profile";
 import { FUNCTIONS_URL, SUPABASE_URL } from "@/lib/env";
 import { count } from "@/lib/format";
@@ -10,7 +12,7 @@ import { count } from "@/lib/format";
 export const metadata: Metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
-  const profile = await getProfile();
+  const [profile, accounts] = await Promise.all([getProfile(), getAccountsWithUsage()]);
 
   return (
     <>
@@ -34,6 +36,8 @@ export default async function SettingsPage() {
           </CardBody>
         </Card>
       </div>
+
+      <AccountsCard accounts={accounts} className="mt-4" />
 
       <Card className="mt-4">
         <CardHeader

@@ -7,6 +7,12 @@
  */
 
 export {
+  canonicalAccountName,
+  isCashAccount,
+  sameAccount,
+} from './accounts.ts';
+
+export {
   assertQuota,
   corsHeaders,
   ensureAccount,

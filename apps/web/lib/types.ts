@@ -63,11 +63,35 @@ export interface Product {
 export interface Account {
   id: string;
   name: string;
+  /** Canonical key written by the trigger in migration 0012: "Slice bank" -> "slice". */
+  normalized_name: string;
   kind: AccountKind;
   institution: string | null;
   currency: string;
   manual_only: boolean;
   is_archived: boolean;
+}
+
+/**
+ * An account plus the totals from `v_account_usage` (migration 0012).
+ *
+ * The view aggregates with `security_invoker`, so these numbers are already
+ * scoped to the signed-in user by RLS. `is_archived` is kept because a merged
+ * account still exists — its transactions and documents were moved to the
+ * survivor.
+ */
+export interface AccountUsage {
+  id: string;
+  name: string;
+  normalized_name: string;
+  kind: AccountKind;
+  manual_only: boolean;
+  is_archived: boolean;
+  txn_count: number;
+  spend: Numeric;
+  income: Numeric;
+  first_seen: string | null;
+  last_seen: string | null;
 }
 
 export interface DocumentRow {
