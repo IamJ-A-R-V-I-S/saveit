@@ -41,8 +41,8 @@ Things that are deliberate:
 `/dashboard` · `/upload` · `/transactions` (URL-driven filters, bulk categorize, manual entry) ·
 `/review` (grouped by description; one decision clears every matching row) · `/insights`
 (coach output with expandable evidence) · `/taxonomy` (merge duplicates, move products, learned
-aliases) · `/budgets` · `/documents` · `/settings` (profile, Telegram, **backend health check**) ·
-`/onboarding`.
+aliases) · `/budgets` · `/documents` · `/settings` (profile, **accounts / duplicate merge**,
+Telegram, backend health check) · `/onboarding`.
 
 ## What needs the backend
 

@@ -22,7 +22,7 @@ text PDFs) and for rows the deterministic resolver can't place.
 
 ## Status
 
-- [x] **Database** — 11 migrations applied to a live Supabase project (PG 17).
+- [x] **Database** — 12 migrations applied to a live Supabase project (PG 17).
       13 tables, RLS on every one, 7 `security_invoker` views, private
       `statements` storage bucket, 14 seeded sectors, pg_cron + pg_net.
 - [x] **Database integration test** — 13/13 assertions pass against the live
@@ -32,7 +32,7 @@ text PDFs) and for rows the deterministic resolver can't place.
 - [x] **Edge functions** — 6 written (`ingest`, `categorize`, `coach`,
       `coach-cron`, `notify`, `correct`).
 - [x] **Local test suite** — parser, dedup parity, taxonomy, merge-queue rules,
-      end-to-end pipeline fixture. All pass.
+      account canonicalizer, end-to-end pipeline fixture. All pass.
 - [x] **Frontend** — Next.js 16 app in [`apps/web`](apps/web): dashboard, upload,
       transactions, review queue, insights, taxonomy, budgets, documents, settings.
       Build, lint and typecheck clean.
@@ -40,6 +40,10 @@ text PDFs) and for rows the deterministic resolver can't place.
       tenants (9/9 against the live project; see migration 0009).
 - [x] **Merge-queue dismissals** — `product_merge_dismissals` (0010) + ownership
       policy (0011) applied; "Not a duplicate" is remembered per user.
+- [x] **Account identity** — `Slice` and `Slice bank` are one account: ingest
+      matches on `normalized_name` (0012), and Settings → Accounts merges the
+      duplicates that predate it. `merge_accounts` recomputes dedup keys and
+      archives the losing row instead of deleting it.
 - [ ] **Deploy edge functions** to Supabase + set secrets. Until then, upload,
       categorize, coach and learned corrections report "not deployed".
 
@@ -58,10 +62,10 @@ supabase/
   migrations/          0001 schema · 0002 RLS · 0003 sectors · 0004 views
                        0005 storage · 0006 aliases · 0007 recurring+cron · 0008 use_count
                        0009 lock down SECURITY DEFINER RPCs · 0010 merge dismissals
-                       0011 dismissal ownership
+                       0011 dismissal ownership · 0012 account identity + merge
   functions/
     _shared/           parse · normalize · taxonomy · taxonomy-seed · llm
-                       extract · db · seed · types
+                       extract · db · seed · types · accounts
     ingest/            upload → parse → stage → dedup → resolve → review queue
     categorize/        drain the review queue with the LLM
     coach/             compute spend patterns, rank savings opportunities
@@ -88,7 +92,8 @@ built-in type stripping (Node 22+):
 
 That covers the deterministic parser (delimiters, header rows, column roles,
 amount and date disambiguation), the dedup-key contract, the taxonomy resolver
-and canonicalizer, and a 30-row end-to-end pipeline fixture.
+and canonicalizer, the account canonicalizer (pinned against
+`public.canonical_account_name()`), and a 30-row end-to-end pipeline fixture.
 
 ### Dedup parity
 

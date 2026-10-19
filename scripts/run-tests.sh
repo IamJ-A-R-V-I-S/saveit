@@ -3,9 +3,9 @@
 # SaveIt — local test runner
 #
 # Runs everything that can be verified without a deployed Supabase project:
-# the deterministic parser, the dedup-key parity contract, and the taxonomy
-# resolver. Uses Node's built-in type stripping, so no build step and no Deno
-# install is required locally.
+# the deterministic parser, the dedup-key parity contract, the taxonomy
+# resolver, and the account canonicalizer. Uses Node's built-in type stripping,
+# so no build step and no Deno install is required locally.
 #
 #   ./scripts/run-tests.sh
 #
@@ -42,6 +42,7 @@ run "parser"        scripts/test-parse.mjs
 run "dedup parity"  scripts/test-dedup-parity.mjs
 run "taxonomy"      scripts/test-taxonomy.mjs
 run "merge queue"   scripts/test-merge-candidates.mjs
+run "accounts"      scripts/test-accounts.mjs
 run "pipeline"      scripts/test-pipeline.mjs
 
 printf '\n'

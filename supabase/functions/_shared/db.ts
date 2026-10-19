@@ -7,6 +7,7 @@
  */
 
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { canonicalAccountName, isCashAccount } from './accounts.ts';
 import type { Alias, Product, Sector } from './types.ts';
 import { QuotaExceededError } from './llm.ts';
 import { normalizeProductName } from './taxonomy-seed.ts';
@@ -199,7 +200,18 @@ export async function ensureProduct(
     : null;
 }
 
-/** Get or create an account by name. Cash-like accounts are flagged manual_only. */
+/**
+ * Get or create an account by name. Cash-like accounts are flagged manual_only.
+ *
+ * Matching on `normalized_name` rather than the whole string is the fix from
+ * migration 0012: a statement that says `Slice bank` and one that says `Slice`
+ * are the same account. The key is computed by `canonicalAccountName()`, which
+ * mirrors the database-side function the trigger uses.
+ *
+ * Archived accounts are skipped. After a merge the losing row is archived, not
+ * deleted, so a later statement using its old spelling must land on the
+ * surviving account — which now owns the same normalized name.
+ */
 export async function ensureAccount(
   admin: SupabaseClient,
   userId: string,
@@ -208,26 +220,46 @@ export async function ensureAccount(
   const clean = name.trim();
   if (!clean) return null;
 
-  const { data: existing } = await admin
-    .from('accounts')
-    .select('id')
-    .eq('user_id', userId)
-    .ilike('name', clean)
-    .maybeSingle();
-  if (existing) return existing.id as string;
+  const normalizedName = canonicalAccountName(clean);
 
-  // No bank statement will ever contain cash, so a cash account can only be
-  // filled by manual entry. 59% of the sample's transactions are cash, so
-  // getting this flag right matters for coverage reporting.
-  const isCash = /^cash$/i.test(clean) || /\bcash\b/i.test(clean);
+  if (normalizedName) {
+    const { data: existing, error: readError } = await admin
+      .from('accounts')
+      .select('id, name')
+      .eq('user_id', userId)
+      .eq('normalized_name', normalizedName)
+      .eq('is_archived', false)
+      .order('created_at', { ascending: true });
+
+    if (readError) {
+      throw new Error(`failed to look up account "${clean}": ${readError.message}`);
+    }
+
+    if (existing && existing.length > 0) {
+      // The index is deliberately not unique (0012), so a tenant that predates
+      // the migration can have two active rows with the same key. Prefer the
+      // exact spelling from the statement; otherwise the oldest row, so repeat
+      // imports keep landing on the same account instead of oscillating.
+      const exact = existing.find(
+        (row) => (row.name as string).trim().toLowerCase() === clean.toLowerCase(),
+      );
+      return (exact ?? existing[0]).id as string;
+    }
+  }
+
+  const cash = isCashAccount(clean);
 
   const { data: created, error } = await admin
     .from('accounts')
     .insert({
       user_id: userId,
       name: clean,
-      kind: isCash ? 'cash' : 'bank',
-      manual_only: isCash,
+      // The trigger computes this too. Sending it explicitly makes the insert
+      // readable, and keeps the row correct on a project where the trigger has
+      // not been added yet.
+      normalized_name: normalizedName,
+      kind: cash ? 'cash' : 'bank',
+      manual_only: cash,
       currency: 'INR',
     })
     .select('id')
