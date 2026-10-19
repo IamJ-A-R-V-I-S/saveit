@@ -41,6 +41,7 @@ fi
 run "parser"        scripts/test-parse.mjs
 run "dedup parity"  scripts/test-dedup-parity.mjs
 run "taxonomy"      scripts/test-taxonomy.mjs
+run "merge queue"   scripts/test-merge-candidates.mjs
 run "pipeline"      scripts/test-pipeline.mjs
 
 printf '\n'
