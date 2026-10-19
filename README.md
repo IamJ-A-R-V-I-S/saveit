@@ -22,7 +22,7 @@ text PDFs) and for rows the deterministic resolver can't place.
 
 ## Status
 
-- [x] **Database** — 8 migrations applied to a live Supabase project (PG 17).
+- [x] **Database** — 9 migrations applied to a live Supabase project (PG 17).
       12 tables, RLS on every one, 7 `security_invoker` views, private
       `statements` storage bucket, 14 seeded sectors, pg_cron + pg_net.
 - [x] **Database integration test** — 13/13 assertions pass against the live
@@ -33,9 +33,13 @@ text PDFs) and for rows the deterministic resolver can't place.
       `coach-cron`, `notify`, `correct`).
 - [x] **Local test suite** — parser, dedup parity, taxonomy, end-to-end pipeline
       fixture. All pass.
-- [ ] **Deploy edge functions** to Supabase + set secrets.
-- [ ] **Frontend** — Next.js (App Router) upload → dashboard → review queue →
-      insights.
+- [x] **Frontend** — Next.js 16 app in [`apps/web`](apps/web): dashboard, upload,
+      transactions, review queue, insights, taxonomy, budgets, documents, settings.
+      Build, lint and typecheck clean.
+- [x] **Security regression test** — `merge_products` can't be used across
+      tenants (9/9 against the live project; see migration 0009).
+- [ ] **Deploy edge functions** to Supabase + set secrets. Until then, upload,
+      categorize, coach and learned corrections report "not deployed".
 
 See [`docs/DESIGN.md`](docs/DESIGN.md) for the full design and the locked
 decisions, and [`docs/DATA-PROFILE.md`](docs/DATA-PROFILE.md) for the measured
@@ -46,9 +50,12 @@ analysis of a real statement that drove several of those decisions.
 ## Layout
 
 ```
+apps/
+  web/                 Next.js 16 frontend — see apps/web/README.md
 supabase/
   migrations/          0001 schema · 0002 RLS · 0003 sectors · 0004 views
                        0005 storage · 0006 aliases · 0007 recurring+cron · 0008 use_count
+                       0009 lock down SECURITY DEFINER RPCs
   functions/
     _shared/           parse · normalize · taxonomy · taxonomy-seed · llm
                        extract · db · seed · types

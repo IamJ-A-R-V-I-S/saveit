@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens.
+ *
+ * Light and dark are both defined as explicit variable sets rather than relying
+ * on Tailwind's `dark:` variants everywhere, so a component says `bg-surface`
+ * and the theme decides what that means. Money has its own pair of hues —
+ * emerald for money in, rose for money out — because in a ledger the sign of a
+ * number is the first thing anyone reads and colour should say it before the
+ * minus sign does.
+ */
+
+:root {
+  --background: #f7f7f8;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f1f1f3;
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --foreground: #18181b;
+  --muted: #71717a;
+  --faint: #a1a1aa;
+
+  --accent: #0f766e;
+  --accent-foreground: #ffffff;
+  --accent-soft: #ccfbf1;
+
+  /* money */
+  --spend: #be123c;
+  --spend-soft: #ffe4e6;
+  --income: #047857;
+  --income-soft: #d1fae5;
+
+  /* status */
+  --success: #15803d;
+  --success-soft: #dcfce7;
+  --warning: #b45309;
+  --warning-soft: #fef3c7;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+  --info: #1d4ed8;
+  --info-soft: #dbeafe;
+
+  --ring: #0f766e;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 3px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 10px 24px -6px rgb(0 0 0 / 0.09);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #09090b;
+    --surface: #131316;
+    --surface-raised: #1a1a1f;
+    --surface-sunken: #0e0e11;
+    --border: #27272a;
+    --border-strong: #3f3f46;
+    --foreground: #f4f4f5;
+    --muted: #a1a1aa;
+    --faint: #71717a;
+
+    --accent: #2dd4bf;
+    --accent-foreground: #04211f;
+    --accent-soft: #113c39;
+
+    --spend: #fb7185;
+    --spend-soft: #3b1220;
+    --income: #34d399;
+    --income-soft: #0c3327;
+
+    --success: #4ade80;
+    --success-soft: #102a1a;
+    --warning: #fbbf24;
+    --warning-soft: #33260a;
+    --danger: #f87171;
+    --danger-soft: #3a1414;
+    --info: #60a5fa;
+    --info-soft: #14233d;
+
+    --ring: #2dd4bf;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 8px 24px -8px rgb(0 0 0 / 0.6);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-raised: var(--surface-raised);
+  --color-sunken: var(--surface-sunken);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-ink: var(--foreground);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-spend: var(--spend);
+  --color-spend-soft: var(--spend-soft);
+  --color-income: var(--income);
+  --color-income-soft: var(--income-soft);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --shadow-card: var(--shadow);
+  --shadow-pop: var(--shadow-lg);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    /* Stops the address bar collapsing/resizing from shifting the layout on
+       mobile, which is jarring on a data-dense table. */
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Tabular figures matter more than most styling here: a column of amounts
+     that jiggle horizontally because 1 is narrower than 4 is unreadable. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--foreground);
+  }
+}
+
+@layer components {
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow);
+  }
+
+  .field {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--foreground);
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+  .field::placeholder {
+    color: var(--faint);
+  }
+  .field:hover {
+    border-color: var(--muted);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .field:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--muted);
+    margin-bottom: 0.375rem;
+  }
+}
+
+/* A thin indeterminate bar, used while an upload parses. */
+@keyframes saveit-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+.progress-indeterminate::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  width: 25%;
+  background: var(--accent);
+  animation: saveit-indeterminate 1.4s ease-in-out infinite;
+}
