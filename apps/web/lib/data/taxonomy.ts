@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { findMergeCandidates, pairKey } from "@/lib/taxonomy-candidates";
 import type { Product } from "@/lib/types";
 
 /**
@@ -82,78 +83,51 @@ export async function getTaxonomyTree(): Promise<
 /**
  * Near-duplicate candidates for merging.
  *
- * `Cha` and `chai` and `Cha (evening)` are the same thing described three ways.
- * Candidates are products in the same sector whose normalized names are
- * prefixes of each other or differ only by punctuation — the same signal the
- * resolver's canonicalization uses, surfaced so a human can confirm it.
+ * The rules live in `lib/taxonomy-candidates.ts` so they can be unit-tested
+ * without a database (`scripts/test-merge-candidates.mjs`). This function only
+ * supplies the products and removes pairs the user has already said are
+ * different — a suggestion that comes back after every reload is not a hint,
+ * it is nagging.
+ *
+ * Merging is destructive (every transaction on one product is repointed at the
+ * other), so the rules deliberately only catch spelling variance. Sharing a word
+ * is not evidence of being the same thing: Ruti and Ruti-tarka, Kachori paratha
+ * and Kachori paratha egg are different dishes and are not offered.
  */
 export async function getMergeCandidates(): Promise<
   { keep: Product; drop: Product; reason: string }[]
 > {
-  const products = await getProducts({ limit: 1000 });
-  const bySector = new Map<string, Product[]>();
-  for (const p of products) {
-    const bucket = bySector.get(p.sector_id);
-    if (bucket) bucket.push(p);
-    else bySector.set(p.sector_id, [p]);
-  }
+  const [products, dismissed] = await Promise.all([getProducts({ limit: 1000 }), getDismissedPairs()]);
 
-  const out: { keep: Product; drop: Product; reason: string }[] = [];
-
-  for (const group of bySector.values()) {
-    for (let i = 0; i < group.length; i++) {
-      for (let j = i + 1; j < group.length; j++) {
-        const a = group[i];
-        const b = group[j];
-        const na = a.normalized_name;
-        const nb = b.normalized_name;
-        if (na === nb) continue;
-
-        let reason: string | null = null;
-        if (na.startsWith(nb) || nb.startsWith(na)) {
-          reason = "one name contains the other";
-        } else if (strip(na) === strip(nb)) {
-          reason = "differ only by spacing";
-        } else if (na.length > 3 && nb.length > 3 && levenshtein(na, nb) <= 1) {
-          reason = "one character apart";
-        }
-        if (!reason) continue;
-
-        // The more-used product survives; it carries the aliases and the
-        // history. `merge_products` enforces this too, but choosing here means
-        // the UI shows the merge in the direction it will actually happen.
-        const [keep, drop] = a.use_count >= b.use_count ? [a, b] : [b, a];
-        out.push({ keep, drop, reason });
-      }
-    }
-  }
-
-  // Highest-impact first: merging two products used 400 times each matters more
-  // than merging two used twice.
-  return out.sort((x, y) => y.keep.use_count + y.drop.use_count - (x.keep.use_count + x.drop.use_count));
+  return findMergeCandidates(products).filter(
+    (candidate) => !dismissed.has(pairKey(candidate.keep.id, candidate.drop.id)),
+  );
 }
 
-function strip(s: string): string {
-  return s.replace(/[^a-z0-9]/g, "");
-}
+/**
+ * Pairs the user has marked "not a duplicate", keyed by `pairKey()`.
+ *
+ * Reads the table added in migration 0010. If that migration has not been
+ * applied yet the queue still works — it just cannot remember a dismissal — so a
+ * missing table degrades to "nothing dismissed" instead of a broken page.
+ */
+async function getDismissedPairs(): Promise<Set<string>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("product_merge_dismissals")
+    .select("product_a_id, product_b_id");
 
-/** Small on purpose — only ever called on short product names. */
-function levenshtein(a: string, b: string): number {
-  if (a === b) return 0;
-  if (Math.abs(a.length - b.length) > 1) return 2;
-  const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
-  for (let i = 1; i <= a.length; i++) {
-    const curr = [i];
-    for (let j = 1; j <= b.length; j++) {
-      curr[j] = Math.min(
-        prev[j] + 1,
-        curr[j - 1] + 1,
-        prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
-      );
-    }
-    prev.splice(0, prev.length, ...curr);
+  if (error) {
+    // 42P01 = undefined_table. Expected on a project that predates 0010.
+    if (error.code !== "42P01") console.error("getDismissedPairs:", error.message);
+    return new Set();
   }
-  return prev[b.length];
+
+  return new Set(
+    (data ?? []).map((row: { product_a_id: string; product_b_id: string }) =>
+      pairKey(row.product_a_id, row.product_b_id),
+    ),
+  );
 }
 
 /** Aliases the user's corrections have taught the system. */

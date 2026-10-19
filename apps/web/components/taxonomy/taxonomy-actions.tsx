@@ -1,9 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { createProduct, mergeProducts, moveProduct } from "@/lib/actions/taxonomy";
+import {
+  createProduct,
+  dismissMergeCandidate,
+  mergeProducts,
+  moveProduct,
+} from "@/lib/actions/taxonomy";
 import { Badge, Card, CardBody, CardHeader, SectorIcon, cx } from "@/components/ui";
 import { count } from "@/lib/format";
+import { pairKey } from "@/lib/taxonomy-candidates";
 import type { Product, Sector } from "@/lib/types";
 
 /**
@@ -25,7 +31,7 @@ export function MergePanel({
   const [done, setDone] = useState<Set<string>>(new Set());
   const [pending, startTransition] = useTransition();
 
-  const open = candidates.filter((c) => !done.has(`${c.keep.id}:${c.drop.id}`));
+  const open = candidates.filter((c) => !done.has(pairKey(c.keep.id, c.drop.id)));
 
   if (open.length === 0) {
     return (
@@ -47,10 +53,33 @@ export function MergePanel({
         setFeedback({ tone: "err", text: result.error });
         return;
       }
-      setDone((prev) => new Set([...prev, `${keepId}:${dropId}`]));
+      setDone((prev) => new Set([...prev, pairKey(keepId, dropId)]));
       setFeedback({
         tone: "ok",
         text: `Merged “${dropName}” into “${keepName}”. Its transactions and aliases moved over, and the duplicate is archived.`,
+      });
+    });
+  }
+
+  /**
+   * Reject the suggestion for good.
+   *
+   * Hiding the row in local state was not enough: the same pair came back on
+   * every reload. The decision is written to `product_merge_dismissals` so the
+   * suggestion queue stays short enough to actually work through.
+   */
+  function dismiss(aId: string, bId: string, aName: string, bName: string) {
+    setFeedback(null);
+    startTransition(async () => {
+      const result = await dismissMergeCandidate(aId, bId);
+      if (!result.ok) {
+        setFeedback({ tone: "err", text: result.error });
+        return;
+      }
+      setDone((prev) => new Set([...prev, pairKey(aId, bId)]));
+      setFeedback({
+        tone: "ok",
+        text: `“${aName}” and “${bName}” are different products. This pair will not be suggested again.`,
       });
     });
   }
@@ -59,7 +88,7 @@ export function MergePanel({
     <Card>
       <CardHeader
         title="Possible duplicates"
-        hint="Same sector, names one edit apart. Merging keeps the more-used product and moves everything across."
+        hint="Same sector, and only a spelling apart: a typo, punctuation, or a qualifier like “Cha (evening)”. Different dishes that merely share a word — Ruti vs Ruti-tarka — are never suggested."
         action={<Badge tone="warning">{open.length}</Badge>}
       />
       <CardBody className="space-y-3">
@@ -114,10 +143,12 @@ export function MergePanel({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setDone((prev) => new Set([...prev, `${c.keep.id}:${c.drop.id}`]))}
-                  className="rounded-md px-2 py-1 text-[11px] font-medium text-faint hover:text-ink"
+                  disabled={pending}
+                  onClick={() => dismiss(c.keep.id, c.drop.id, c.keep.name, c.drop.name)}
+                  className="rounded-md border border-line px-2 py-1 text-[11px] font-medium text-faint hover:bg-sunken hover:text-ink disabled:opacity-50"
+                  title="These are different products — never suggest this pair again"
                 >
-                  Skip
+                  Not a duplicate
                 </button>
               </span>
             </li>

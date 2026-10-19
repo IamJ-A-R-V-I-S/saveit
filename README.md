@@ -22,8 +22,8 @@ text PDFs) and for rows the deterministic resolver can't place.
 
 ## Status
 
-- [x] **Database** — 9 migrations applied to a live Supabase project (PG 17).
-      12 tables, RLS on every one, 7 `security_invoker` views, private
+- [x] **Database** — 11 migrations applied to a live Supabase project (PG 17).
+      13 tables, RLS on every one, 7 `security_invoker` views, private
       `statements` storage bucket, 14 seeded sectors, pg_cron + pg_net.
 - [x] **Database integration test** — 13/13 assertions pass against the live
       project; self-cleaning.
@@ -31,13 +31,15 @@ text PDFs) and for rows the deterministic resolver can't place.
       provider-agnostic LLM adapter, PDF/image/text extraction.
 - [x] **Edge functions** — 6 written (`ingest`, `categorize`, `coach`,
       `coach-cron`, `notify`, `correct`).
-- [x] **Local test suite** — parser, dedup parity, taxonomy, end-to-end pipeline
-      fixture. All pass.
+- [x] **Local test suite** — parser, dedup parity, taxonomy, merge-queue rules,
+      end-to-end pipeline fixture. All pass.
 - [x] **Frontend** — Next.js 16 app in [`apps/web`](apps/web): dashboard, upload,
       transactions, review queue, insights, taxonomy, budgets, documents, settings.
       Build, lint and typecheck clean.
 - [x] **Security regression test** — `merge_products` can't be used across
       tenants (9/9 against the live project; see migration 0009).
+- [x] **Merge-queue dismissals** — `product_merge_dismissals` (0010) + ownership
+      policy (0011) applied; "Not a duplicate" is remembered per user.
 - [ ] **Deploy edge functions** to Supabase + set secrets. Until then, upload,
       categorize, coach and learned corrections report "not deployed".
 
@@ -55,7 +57,8 @@ apps/
 supabase/
   migrations/          0001 schema · 0002 RLS · 0003 sectors · 0004 views
                        0005 storage · 0006 aliases · 0007 recurring+cron · 0008 use_count
-                       0009 lock down SECURITY DEFINER RPCs
+                       0009 lock down SECURITY DEFINER RPCs · 0010 merge dismissals
+                       0011 dismissal ownership
   functions/
     _shared/           parse · normalize · taxonomy · taxonomy-seed · llm
                        extract · db · seed · types

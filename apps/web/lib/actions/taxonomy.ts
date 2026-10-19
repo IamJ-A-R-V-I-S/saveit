@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient, currentUser } from "@/lib/supabase/server";
+import { orderedPair } from "@/lib/taxonomy-candidates";
 import type { ActionResult } from "@/lib/actions/auth";
 
 /**
@@ -42,6 +43,67 @@ export async function mergeProducts(keepId: string, dropId: string): Promise<Act
   revalidatePath("/dashboard");
   revalidatePath("/review");
   return { ok: true };
+}
+
+/**
+ * "These two are different products — stop suggesting a merge."
+ *
+ * The merge queue is a heuristic, and a heuristic will always be wrong about
+ * some pairs: Ruti and Ruti-tarka share a word and nothing else. Without this,
+ * the only way to reject a suggestion is to ignore it, and it reappears on every
+ * page load. Persisting the decision is what turns the queue into something a
+ * user can finish.
+ *
+ * Ownership is enforced three times over: the products are read through the
+ * caller's RLS-scoped client (so another tenant's ids simply do not exist),
+ * the insert carries `user_id = auth.uid()`, and the 0002-style insert policy
+ * checks that the row belongs to the caller.
+ */
+export async function dismissMergeCandidate(aId: string, bId: string): Promise<ActionResult> {
+  if (!isUuid(aId) || !isUuid(bId)) return { ok: false, error: "Unknown product." };
+  if (aId === bId) return { ok: false, error: "Pick two different products." };
+
+  const supabase = await createClient();
+  const user = await currentUser();
+  if (!user) return { ok: false, error: "You are signed out." };
+
+  const { data: owned, error: readError } = await supabase
+    .from("products")
+    .select("id")
+    .in("id", [aId, bId]);
+  if (readError) return { ok: false, error: readError.message };
+  if ((owned ?? []).length !== 2) {
+    return { ok: false, error: "One of those products no longer exists." };
+  }
+
+  const [first, second] = orderedPair(aId, bId);
+  const { error } = await supabase.from("product_merge_dismissals").upsert(
+    {
+      user_id: user.id,
+      product_a_id: first,
+      product_b_id: second,
+      reason: "marked distinct in the merge queue",
+    },
+    { onConflict: "user_id,product_a_id,product_b_id", ignoreDuplicates: true },
+  );
+
+  if (error) {
+    if (error.code === "42P01") {
+      return {
+        ok: false,
+        error: "Dismissals need migration 0010 — run `supabase db push` and try again.",
+      };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/taxonomy");
+  return { ok: true };
+}
+
+/** A UUID, as Postgres would accept it. Guards the uuid cast in the queries above. */
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
 /**
