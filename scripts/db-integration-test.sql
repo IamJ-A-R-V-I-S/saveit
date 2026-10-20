@@ -92,7 +92,8 @@ begin
     ) as v(name, norm, slug);
 
     insert into public.accounts (user_id, name, kind, manual_only)
-    values ('aaaaaaaa-0000-0000-0000-000000000001', 'Test SBI', 'bank', false);
+    values ('aaaaaaaa-0000-0000-0000-000000000001', 'Test SBI', 'bank', false),
+           ('aaaaaaaa-0000-0000-0000-000000000001', 'Kotak bank', 'bank', false);
 
     select count(*) into n from public.products
      where user_id = 'aaaaaaaa-0000-0000-0000-000000000001';

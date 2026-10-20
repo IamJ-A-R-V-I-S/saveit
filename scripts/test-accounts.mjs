@@ -58,6 +58,7 @@ const CASES = [
   ['Saving(mom)', 'saving mom'],
   ['HDFC Bank Account', 'hdfc'],
   ['Bank of Baroda', 'bank of baroda'],
+  ['Kotak bank', 'kotak'],
   // A lone generic word is never emptied out.
   ['Bank', 'bank'],
   ['Bank bank', 'bank'],
