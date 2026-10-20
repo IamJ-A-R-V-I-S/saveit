@@ -70,13 +70,13 @@ eq('tracker export', (() => {
 
 eq('HDFC-style bank header', (() => {
   const m = mapColumns(['Date','Narration','Chq Type','Withdrawal Amt.','Deposit Amt.','Closing Balance']);
-  return { date: m.date, description: m.description, direction: m.direction, amount: m.amount };
-})(), { date: 0, description: 1, direction: 2, amount: 3 });
+  return { date: m.date, description: m.description, direction: m.direction, debit: m.debit, credit: m.credit };
+})(), { date: 0, description: 1, direction: 2, debit: 3, credit: 4 });
 
 eq('SBI-style header', (() => {
   const m = mapColumns(['Txn Date','Value Date','Description','Ref No.','Debit','Credit','Balance']);
-  return { date: m.date, description: m.description, amount: m.amount };
-})(), { date: 0, description: 2, amount: 4 });
+  return { date: m.date, description: m.description, debit: m.debit };
+})(), { date: 0, description: 2, debit: 4 });
 
 eq('date is not stolen by the description role', (() => {
   const m = mapColumns(['Transaction Date','Transaction Details']);

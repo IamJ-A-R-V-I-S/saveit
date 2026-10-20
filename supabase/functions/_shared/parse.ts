@@ -204,6 +204,14 @@ const ROLE_PATTERNS: RoleDef[] = [
     ],
   },
   {
+    role: 'debit',
+    patterns: ['debit', 'withdrawals', 'withdrawal', 'dr'],
+  },
+  {
+    role: 'credit',
+    patterns: ['credit', 'deposits', 'deposit', 'cr'],
+  },
+  {
     role: 'amount',
     patterns: [
       'amount', 'amt', 'transaction amount', 'txn amount', 'value',
@@ -300,7 +308,7 @@ export function mapColumns(header: string[]): HeaderMap {
  */
 export function isUsableMap(map: HeaderMap): boolean {
   return map.date !== undefined
-    && map.amount !== undefined
+    && (map.amount !== undefined || map.debit !== undefined || map.credit !== undefined)
     && (map.description !== undefined || map.category !== undefined);
 }
 

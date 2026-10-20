@@ -105,6 +105,8 @@ export function assignOccurrences<T extends { occurredAt: Date; amount: number; 
 export interface ColumnValues {
   date?: string;
   amount?: string;
+  debit?: string;
+  credit?: string;
   direction?: string;
   description?: string;
   category?: string;
@@ -127,17 +129,27 @@ export function stageRow(
   const occurredAt = parseDate(cols.date ?? '', opts.dayFirst ?? true);
   if (!occurredAt) return { skip: `unparseable date: ${JSON.stringify(cols.date)}` };
 
-  const parsed = parseAmount(cols.amount ?? '');
-  if (!parsed) return { skip: `unparseable amount: ${JSON.stringify(cols.amount)}` };
-  if (parsed.amount === 0) return { skip: 'zero amount' };
+  // Amount + direction: support separate Debit/Credit columns (common in bank
+  // statements like SBI) as well as a single signed Amount column. Separate
+  // debit/credit columns take priority when present.
+  let parsed: { amount: number; negative: boolean } | null = null;
+  let direction: Direction | null = null;
 
-  // Direction: trust an explicit Dr/Cr column when present, otherwise fall back
-  // to the sign of the amount. The sample uses a `type` column (Expenses/Income)
-  // AND negative amounts, so both paths agree -- but a bank export with
-  // unsigned amounts in separate Withdrawal/Deposit columns needs the explicit
-  // path.
-  let direction: Direction | null = parseDirection(cols.direction);
-  if (!direction) direction = parsed.negative ? 'debit' : 'credit';
+  const debit = parseAmount(cols.debit ?? '');
+  const credit = parseAmount(cols.credit ?? '');
+  if (debit && debit.amount > 0) {
+    parsed = debit;
+    direction = 'debit';
+  } else if (credit && credit.amount > 0) {
+    parsed = credit;
+    direction = 'credit';
+  } else {
+    parsed = parseAmount(cols.amount ?? '');
+    if (!parsed) return { skip: `unparseable amount: ${JSON.stringify(cols.amount ?? cols.debit ?? cols.credit)}` };
+    if (parsed.amount === 0) return { skip: 'zero amount' };
+    direction = parseDirection(cols.direction);
+    if (!direction) direction = parsed.negative ? 'debit' : 'credit';
+  }
 
   // A tracker export labels the row with its own category ("Cha") and keeps the
   // free-text context in `note`. A bank statement puts a mangled merchant string

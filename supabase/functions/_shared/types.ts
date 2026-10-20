@@ -36,6 +36,8 @@ export interface StagedRow {
 export interface HeaderMap {
   date?: number;
   amount?: number;
+  debit?: number;
+  credit?: number;
   direction?: number;
   description?: number;
   category?: number;

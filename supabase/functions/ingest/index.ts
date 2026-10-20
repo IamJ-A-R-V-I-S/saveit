@@ -427,6 +427,8 @@ async function parseDocument(
     const cols: ColumnValues = {
       date: map.date !== undefined ? r[map.date] : undefined,
       amount: map.amount !== undefined ? r[map.amount] : undefined,
+      debit: map.debit !== undefined ? r[map.debit] : undefined,
+      credit: map.credit !== undefined ? r[map.credit] : undefined,
       direction: map.direction !== undefined ? r[map.direction] : undefined,
       description: map.description !== undefined ? r[map.description] : undefined,
       category: map.category !== undefined ? r[map.category] : undefined,
